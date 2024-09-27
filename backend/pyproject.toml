@@ -1,0 +1,7 @@
+[project]
+name = "flux"  
+
+[tool.aerich]
+tortoise_orm = "src.database.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
