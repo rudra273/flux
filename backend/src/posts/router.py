@@ -46,3 +46,4 @@ async def delete_post_route(post_id: int):
         raise PostNotFoundError(post_id)
     await post.delete()
     return {"message": "Post deleted successfully"} 
+
