@@ -16,3 +16,5 @@ class Post(Model, TimestampMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.info(f"Post instance created: {self.title}")
+
+        

@@ -26,7 +26,9 @@ register_tortoise(
     add_exception_handlers=True,
 )
 
+
 app.include_router(posts_router, prefix="/posts", tags=["posts"])
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -42,3 +44,4 @@ async def shutdown_event():
 async def root():
     logger.info("Root endpoint accessed")
     return {"message": "Welcome to the Flux API"}
+
