@@ -19,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup database
 register_tortoise(
     app,
     config=TORTOISE_ORM,
@@ -27,9 +28,11 @@ register_tortoise(
 )
 
 
+# Register routers
 app.include_router(posts_router, prefix="/posts", tags=["posts"])
 
 
+# Setup events
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting up the application")
@@ -44,4 +47,3 @@ async def shutdown_event():
 async def root():
     logger.info("Root endpoint accessed")
     return {"message": "Welcome to the Flux API"}
-
