@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException, Depends
 from src.posts.models import Post
-from src.posts.schemas import PostCreate, PostUpdate, PostInDB
+from src.posts.schemas import PostCreate, PostUpdate, PostInDB, PostWithUser
 from src.posts.exceptions import PostNotFoundError
 from src.users.service import get_current_user
 from src.users.models import User
@@ -27,10 +27,39 @@ async def get_post_route(post_id: int):
         raise PostNotFoundError(post_id)
     return post
 
-@router.get("/", response_model=list[PostInDB])
+# @router.get("/", response_model=list[PostInDB])
+# async def get_all_posts_route():
+#     logger.info("Fetching all posts")
+#     return await Post.all() 
+
+
+@router.get("/", response_model=list[PostWithUser])
 async def get_all_posts_route():
     logger.info("Fetching all posts")
-    return await Post.all()  # Fetch all posts without filtering by user
+    
+    # Fetch all posts
+    posts = await Post.all()
+    
+    # Create a list to store the response data
+    result = []
+    
+    # Loop through each post and fetch the corresponding username from the User table
+    for post in posts:
+        # Fetch the user using the user_id from the post
+        user = await User.get(id=post.user_id)
+        
+        # Append the post data with the username to the result
+        result.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "username": user.username,  # Get username from User table
+            "created_at": post.created_at,
+            "updated_at": post.updated_at,
+        })
+    
+    return result
+
 
 @router.put("/{post_id}", response_model=PostInDB)
 async def update_post_route(post_id: int, post_update: PostUpdate, current_user: User = Depends(get_current_user)):

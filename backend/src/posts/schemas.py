@@ -19,3 +19,16 @@ class PostInDB(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# response model
+class PostWithUser(BaseModel):
+    id: int
+    title: str
+    content: str
+    username: str  
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        rom_attributes = True
