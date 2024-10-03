@@ -1,5 +1,11 @@
 [project]
-name = "flux"  
+name = "flux"
+version = "0.1.0"
+description = "A project using FastAPI, Tortoise ORM, and Aerich."
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.aerich]
 tortoise_orm = "src.database.TORTOISE_ORM"

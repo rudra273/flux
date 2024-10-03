@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from src.posts.router import router as posts_router
+from src.users.router import router as users_router
 from src.database import init_db, close_db, TORTOISE_ORM
 
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +31,7 @@ register_tortoise(
 
 # Register routers
 app.include_router(posts_router, prefix="/posts", tags=["posts"])
-
+app.include_router(users_router, prefix="/users", tags=["users"])
 
 # Setup events
 @app.on_event("startup")

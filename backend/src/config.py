@@ -9,6 +9,7 @@ def get_env_variable(var_name):
         raise ValueError(f"Environment variable {var_name} is not set")
     return value
 
+
 DB_USER = get_env_variable("DB_USER")
 DB_PASSWORD = get_env_variable("DB_PASSWORD")
 DB_HOST = get_env_variable("DB_HOST")

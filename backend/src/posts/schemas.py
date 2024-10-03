@@ -1,20 +1,21 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import datetime
 
-class PostBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=255)
-    content: str = Field(..., min_length=1)
+class PostCreate(BaseModel):
+    title: str
+    content: str
 
-class PostCreate(PostBase):
-    pass
+class PostUpdate(BaseModel):
+    title: str 
+    content: str 
 
-class PostUpdate(PostBase):
-    pass
-
-class PostInDB(PostBase):
+class PostInDB(BaseModel):
     id: int
+    title: str
+    content: str
+    user_id: int
     created_at: datetime
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
