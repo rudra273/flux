@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getPost } from '../../../utils/api';
+import { getPost } from '../../../utils/postsApi';
 
 export default function PostPage() {
   const [post, setPost] = useState(null);
