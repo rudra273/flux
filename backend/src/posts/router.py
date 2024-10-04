@@ -27,11 +27,6 @@ async def get_post_route(post_id: int):
         raise PostNotFoundError(post_id)
     return post
 
-# @router.get("/", response_model=list[PostInDB])
-# async def get_all_posts_route():
-#     logger.info("Fetching all posts")
-#     return await Post.all() 
-
 
 @router.get("/", response_model=list[PostWithUser])
 async def get_all_posts_route():

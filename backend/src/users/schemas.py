@@ -92,7 +92,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str
-    token_type: str = "access"
+    token_type: str 
 
 
 class RefreshToken(BaseModel):

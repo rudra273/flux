@@ -1,73 +1,84 @@
 import { refreshToken } from './authApi';
 
-interface ApiOptions extends RequestInit {
-  requiresAuth?: boolean;
-}
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
+    this.name = 'ApiError';
   }
 }
 
-export const apiClient = async (
-  endpoint: string,
-  options: ApiOptions = {}
-) => {
-  const { requiresAuth = true, ...fetchOptions } = options;
+interface ApiOptions extends RequestInit {
+  requiresAuth?: boolean;
+}
+
+async function handleResponse(response: Response) {
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, errorBody.detail || response.statusText);
+  }
+  return response.json();
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expirationTime = payload.exp * 1000; // Convert to milliseconds
+    return Date.now() >= expirationTime;
+  } catch (error) {
+    console.error('Error parsing token:', error);
+    return true; // Assume token is expired if we can't parse it
+  }
+}
+
+async function getValidToken(): Promise<string> {
+  let token = localStorage.getItem('accessToken');
+  
+  if (!token || isTokenExpired(token)) {
+    const refreshTokenValue = localStorage.getItem('refreshToken');
+    if (!refreshTokenValue) {
+      throw new ApiError(401, 'No refresh token found');
+    }
+
+    try {
+      const tokens = await refreshToken();
+      localStorage.setItem('accessToken', tokens.access_token);
+      localStorage.setItem('refreshToken', tokens.refresh_token);
+      token = tokens.access_token;
+    } catch (error) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      throw new ApiError(401, 'Failed to refresh token');
+    }
+  }
+
+  return token;
+}
+
+export async function apiClient(endpoint: string, options: ApiOptions = {}) {
+  const { requiresAuth = false, ...fetchOptions } = options;
   const url = `${API_URL}${endpoint}`;
 
   if (requiresAuth) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      throw new ApiError(401, 'No access token found');
+    try {
+      const token = await getValidToken();
+      fetchOptions.headers = {
+        ...fetchOptions.headers,
+        'Authorization': `Bearer ${token}`
+      };
+    } catch (error) {
+      throw error; // Re-throw the error if we couldn't get a valid token
     }
-    fetchOptions.headers = {
-      ...fetchOptions.headers,
-      'Authorization': `Bearer ${token}`
-    };
   }
 
   try {
     const response = await fetch(url, fetchOptions);
-
-    // If the response is 401 (Unauthorized), try to refresh the token
-    if (response.status === 401 && requiresAuth) {
-      try {
-        // Attempt to refresh the token
-        const refreshResult = await refreshToken();
-        
-        // Retry the original request with the new token
-        fetchOptions.headers = {
-          ...fetchOptions.headers,
-          'Authorization': `Bearer ${refreshResult.access_token}`
-        };
-        
-        const retryResponse = await fetch(url, fetchOptions);
-        
-        if (!retryResponse.ok) {
-          throw new ApiError(retryResponse.status, 'Request failed after token refresh');
-        }
-        
-        return retryResponse.json();
-      } catch (refreshError) {
-        // If refresh fails, throw authentication error
-        throw new ApiError(401, 'Authentication failed');
-      }
-    }
-
-    if (!response.ok) {
-      throw new ApiError(response.status, 'Request failed');
-    }
-
-    return response.json();
+    return handleResponse(response);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
     throw new ApiError(500, 'Network error');
   }
-};
-
+}
