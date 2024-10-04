@@ -29,7 +29,7 @@ async def get_post_route(post_id: int):
 
 
 @router.get("/", response_model=list[PostWithUser])
-async def get_all_posts_route():
+async def get_all_posts():
     logger.info("Fetching all posts")
     
     # Fetch all posts
