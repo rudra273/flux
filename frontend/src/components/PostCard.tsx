@@ -1,4 +1,5 @@
 import React from 'react';
+import { User, Clock } from 'lucide-react';
 
 interface Post {
   id: number;
@@ -14,18 +15,50 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  console.log('Rendering PostCard:', post);
+  // Function to format the time difference
+  const getTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInMilliseconds = now.getTime() - postDate.getTime();
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInHours === 1) {
+      return '1 hour ago';
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hours ago`;
+    } else {
+      // Format date for posts older than 24 hours
+      return postDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: postDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      });
+    }
+  };
 
   return (
-    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-      <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-      <p className="text-gray-600 truncate">{post.content}</p>
+    <div className="bg-background border rounded-lg p-6 hover:shadow-lg transition-all duration-300">
+      {/* User info and time */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <div className="bg-muted/30 p-2 rounded-full">
+            <User size={18} className="text-muted-foreground" />
+          </div>
+          <span className="font-medium text-foreground">{post.username}</span>
+        </div>
+        <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+          <Clock size={16} />
+          <span>{getTimeAgo(post.created_at)}</span>
+        </div>
+      </div>
 
-      {/* New section for additional information */}
-      <div className="mt-4 text-sm text-gray-500">
-        <p>Posted by: <span className="font-medium">{post.username}</span></p>
-        <p>Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
-        <p>Last updated: {new Date(post.updated_at).toLocaleDateString()}</p>
+      {/* Post content */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2 text-foreground">{post.title}</h2>
+        <p className="text-muted-foreground line-clamp-3">{post.content}</p>
       </div>
     </div>
   );
