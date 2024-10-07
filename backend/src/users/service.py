@@ -3,18 +3,23 @@ from fastapi import HTTPException, status, Depends
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from .models import User
-from .schemas import UserCreate, UserResponse, TokenData
+from .models import User, Profile
+from .schemas import (UserCreate, UserResponse, 
+                        TokenData, PostResponse, 
+                        ProfileDetailResponse, ProfileResponse,
+                        ProfileUpdate )
 from fastapi.security import OAuth2PasswordBearer
 import uuid
 from typing import Optional
+from tortoise.transactions import in_transaction
+from src.posts.models import Post 
 
 logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-SECRET_KEY = "rudra"  # In production, use a secure secret key
+SECRET_KEY = "rudra"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 5
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -22,13 +27,26 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 # Store for refresh tokens (In production, use Redis or database)
 refresh_tokens = {}
 
+# async def create_user(user: UserCreate) -> UserResponse:
+#     hashed_password = pwd_context.hash(user.password)
+#     user_dict = user.dict()
+#     user_dict['password'] = hashed_password
+#     new_user = User(**user_dict)
+#     await new_user.save()
+#     logger.info(f"Created new user: {new_user.username}")
+#     return UserResponse.from_orm(new_user)
+
 async def create_user(user: UserCreate) -> UserResponse:
     hashed_password = pwd_context.hash(user.password)
     user_dict = user.dict()
     user_dict['password'] = hashed_password
-    new_user = User(**user_dict)
-    await new_user.save()
-    logger.info(f"Created new user: {new_user.username}")
+    
+    # Create user and profile in a transaction
+    async with in_transaction() as connection:
+        new_user = await User.create(**user_dict)
+        await Profile.create(user=new_user)
+    
+    logger.info(f"Created new user and profile: {new_user.username}")
     return UserResponse.from_orm(new_user)
 
 async def authenticate_user(username: str, password: str) -> Optional[User]:
@@ -146,4 +164,45 @@ def revoke_refresh_token(refresh_token: str) -> None:
         username = refresh_tokens[refresh_token]["username"]
         del refresh_tokens[refresh_token]
         logger.info(f"Revoked refresh token for user: {username}")
+
+
+
+# profile 
+async def get_user_profile(username: str) -> Optional[ProfileDetailResponse]:
+    user = await User.get_or_none(username=username).prefetch_related('profile', 'posts')
+    if not user:
+        return None
         
+    # Get recent posts with all details
+    recent_posts = await Post.filter(user=user).order_by('-created_at').limit(5)
+    
+    return ProfileDetailResponse(
+        username=user.username,
+        email=user.email,
+        first_name=user.profile.first_name,
+        last_name=user.profile.last_name,
+        bio=user.profile.bio,
+        dob=user.profile.dob,
+        recent_posts=[PostResponse.from_orm(post) for post in recent_posts]
+    )
+
+
+async def update_user_profile(username: str, profile_data: ProfileUpdate) -> Optional[ProfileResponse]:
+    user = await User.get_or_none(username=username).prefetch_related('profile')
+    if not user:
+        return None
+        
+    # Update profile
+    await user.profile.update_from_dict(profile_data.dict(exclude_unset=True)).save()
+    
+    # Refresh the profile data
+    await user.profile.refresh_from_db()
+    
+    return ProfileResponse(
+        username=user.username,
+        email=user.email,
+        first_name=user.profile.first_name,
+        last_name=user.profile.last_name,
+        bio=user.profile.bio,
+        dob=user.profile.dob
+    )

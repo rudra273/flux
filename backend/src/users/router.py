@@ -1,10 +1,12 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from .schemas import UserCreate, UserResponse, Token, RefreshToken
+from .schemas import UserCreate, UserResponse, Token, RefreshToken, ProfileDetailResponse, ProfileResponse, ProfileUpdate
 from .service import (
     create_user, authenticate_user, create_access_token, create_refresh_token,
-    get_current_user, verify_refresh_token, revoke_refresh_token
+    get_current_user, verify_refresh_token, revoke_refresh_token,
+    get_user_profile, update_user_profile
+    
 )
 from datetime import timedelta
 from .models import User
@@ -84,3 +86,40 @@ async def logout(refresh_token: RefreshToken):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     logger.info(f"Fetching user info for: {current_user.username}")
     return current_user
+
+
+# profile
+
+@router.get("/profile/{username}", response_model=ProfileDetailResponse)
+async def get_profile(username: str):
+    logger.info(f"Fetching profile for user: {username}")
+    profile = await get_user_profile(username)
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return profile
+
+
+@router.put("/profile/{username}", response_model=ProfileResponse)
+async def update_profile(
+    username: str,
+    profile_data: ProfileUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    # Check if the current user is updating their own profile
+    if current_user.username != username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot update another user's profile"
+        )
+    
+    logger.info(f"Updating profile for user: {username}")
+    updated_profile = await update_user_profile(username, profile_data)
+    if not updated_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return updated_profile

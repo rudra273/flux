@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { User, Clock } from 'lucide-react';
 
 interface Post {
@@ -47,7 +48,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <div className="bg-muted/30 p-2 rounded-full">
             <User size={18} className="text-muted-foreground" />
           </div>
-          <span className="font-medium text-foreground">{post.username}</span>
+          {/* <span className="font-medium text-foreground">{post.username}</span> */}
+          
+          <Link href={`/profile/${post.username}`} className="hover:underline">
+            <span className="font-medium text-foreground">{post.username}</span>
+          </Link>
+
         </div>
         <div className="flex items-center space-x-1 text-sm text-muted-foreground">
           <Clock size={16} />

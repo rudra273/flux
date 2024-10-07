@@ -21,26 +21,6 @@ export const metadata: Metadata = {
   description: "A platform for sharing and discovering posts",
 };
 
-// export default function RootLayout({
-//   children,
-// }: Readonly<{
-//   children: React.ReactNode;
-// }>) {
-//   return (
-//     <html lang="en">
-//       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-//         <AuthProvider>
-//           <div className="flex min-h-screen">
-//             <SideNav />
-//             <main className="flex-1 ml-64 p-8">
-//               {children}
-//             </main>
-//           </div>
-//         </AuthProvider>
-//       </body>
-//     </html>
-//   );
-// }
 export default function RootLayout({
   children,
 }: Readonly<{
