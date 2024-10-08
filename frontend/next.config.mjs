@@ -10,8 +10,8 @@ const nextConfig = {
       API_URL: process.env.NEXT_PUBLIC_API_URL,
     },
     images: {
-      domains: ['unsplash.com'], // Add the domain here
+      domains: ['unsplash.com'], 
     },
   }
   
-export default nextConfig;
+export default nextConfig; 

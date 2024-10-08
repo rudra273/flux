@@ -1,7 +1,6 @@
-// components/chat/ChatRoom.tsx
-'use client';
+"use client"
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { getChannel, ChannelDetail, Message } from '@/utils/chatApi';
 import MessageList from './MessageList';
@@ -17,8 +16,9 @@ const ChatRoom: React.FC = () => {
   const [channel, setChannel] = useState<ChannelDetail | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isConnecting = useRef(false);
+  const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchChannel = useCallback(async () => {
     if (channelId) {
@@ -35,21 +35,30 @@ const ChatRoom: React.FC = () => {
   }, [channelId]);
 
   const connectWebSocket = useCallback(() => {
-    if (channelId && channel && !isConnecting) {
-      setIsConnecting(true);
+    if (channelId && channel && !isConnecting.current) {
+      isConnecting.current = true;
       
       const token = localStorage.getItem('accessToken');
-
+      if (!token) {
+        setError('No access token found. Please log in again.');
+        isConnecting.current = false;
+        return;
+      }
+  
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
       const ws = new WebSocket(`${wsUrl}/chat/ws/${channelId}?token=${token}`);
-
+  
       ws.onopen = () => {
         console.log('WebSocket connection established');
         setSocket(ws);
-        setIsConnecting(false);
+        isConnecting.current = false;
         setError(null);
+        if (reconnectTimeout.current) {
+          clearTimeout(reconnectTimeout.current);
+          reconnectTimeout.current = null;
+        }
       };
-
+  
       ws.onmessage = (event) => {
         try {
           const newMessage = JSON.parse(event.data);
@@ -58,28 +67,34 @@ const ChatRoom: React.FC = () => {
           console.error('Failed to parse message:', error);
         }
       };
-
+  
       ws.onclose = (event) => {
-        console.log('WebSocket connection closed');
+        console.log('WebSocket connection closed', event);
         setSocket(null);
-        setIsConnecting(false);
+        isConnecting.current = false;
         if (!event.wasClean) {
           setError('Connection lost. Attempting to reconnect...');
-          setTimeout(connectWebSocket, RECONNECT_INTERVAL);
+          reconnectTimeout.current = setTimeout(() => {
+            connectWebSocket();
+          }, RECONNECT_INTERVAL);
         }
       };
-
+  
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
         setError('Connection error. Please check your internet connection.');
         ws.close();
       };
-
+  
       return () => {
         ws.close();
+        if (reconnectTimeout.current) {
+          clearTimeout(reconnectTimeout.current);
+          reconnectTimeout.current = null;
+        }
       };
     }
-  }, [channelId, channel, isConnecting]);
+  }, [channelId, channel]);
 
   useEffect(() => {
     fetchChannel();
@@ -93,7 +108,7 @@ const ChatRoom: React.FC = () => {
         socket.close();
       }
     };
-  }, [connectWebSocket, socket]);
+  }, [connectWebSocket]);
 
   const sendMessage = useCallback((content: string) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
