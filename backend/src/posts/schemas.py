@@ -31,4 +31,4 @@ class PostWithUser(BaseModel):
     updated_at: datetime
 
     class Config:
-        rom_attributes = True
+        from_attributes = True

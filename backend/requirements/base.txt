@@ -41,4 +41,4 @@ tomli
 tomlkit
 tortoise-orm
 typing_extensions
-uvicorn
+uvicorn[standard]

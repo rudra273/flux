@@ -2,9 +2,14 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
+from src.database import init_db, close_db, TORTOISE_ORM
+
+# routers import
 from src.posts.router import router as posts_router
 from src.users.router import router as users_router
-from src.database import init_db, close_db, TORTOISE_ORM
+from src.chat import router as chat_router
+from src.chat import ws_router as chat_ws_router
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,6 +37,9 @@ register_tortoise(
 # Register routers
 app.include_router(posts_router, prefix="/posts", tags=["posts"])
 app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(chat_router.router, prefix="/chat", tags=["chat"])
+app.include_router(chat_ws_router.router, prefix="/chat", tags=["chat"])
+
 
 # Setup events
 @app.on_event("startup")
