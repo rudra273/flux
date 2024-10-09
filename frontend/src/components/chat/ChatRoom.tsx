@@ -6,6 +6,7 @@ import { getChannel, ChannelDetail, Message } from '@/utils/chatApi';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import Link from 'next/link';
+import { BACKEND_WS_URL } from '@/constants';
 
 const RECONNECT_INTERVAL = 5000; // 5 seconds
 
@@ -46,7 +47,9 @@ const ChatRoom: React.FC = () => {
       }
   
       // const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+      // const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+
+      const wsUrl = BACKEND_WS_URL;
 
       const ws = new WebSocket(`${wsUrl}/chat/ws/${channelId}?token=${token}`);
   

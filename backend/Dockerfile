@@ -1,6 +1,9 @@
 # Use an official Python runtime as the parent image
 FROM python:3.11-slim
 
+# Set environmental variables
+ENV PYTHONUNBUFFERED=true
+
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \

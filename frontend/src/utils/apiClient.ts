@@ -1,6 +1,9 @@
 import { refreshToken } from './authApi';
+import { BACKEND_API_URL } from '@/constants';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = BACKEND_API_URL;
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

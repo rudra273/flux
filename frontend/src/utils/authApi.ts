@@ -1,5 +1,7 @@
+import { BACKEND_API_URL } from '@/constants';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = BACKEND_API_URL;
 
 interface AuthTokens {
   access_token: string;
