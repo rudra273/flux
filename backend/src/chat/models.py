@@ -1,3 +1,5 @@
+# chat/models.py
+
 from tortoise import fields
 from src.models import TimestampMixin
 from tortoise.models import Model

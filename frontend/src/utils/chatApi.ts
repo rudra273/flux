@@ -53,3 +53,23 @@ export const sendMessage = async (channelId: number, content: string): Promise<M
 };
 
 
+export const searchChannels = async (query: string): Promise<Channel[]> => {
+  return apiClient(`/chat/channels/search?query=${encodeURIComponent(query)}`, { requiresAuth: true });
+};
+
+
+export const joinChannel = async (channelId: number): Promise<void> => {
+  return apiClient(`/chat/channels/${channelId}/join`, {
+    method: 'POST',
+    requiresAuth: true
+  });
+};
+
+
+export const leaveChannel = async (channelId: number): Promise<void> => {
+  return apiClient(`/chat/channels/${channelId}/leave`, {
+    method: 'DELETE',
+    requiresAuth: true
+  });
+};
+

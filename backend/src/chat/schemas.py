@@ -1,3 +1,5 @@
+# chat/schemas.py
+
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
@@ -16,7 +18,7 @@ class ChannelResponse(BaseModel):
     description: Optional[str]
     is_public: bool
     created_at: datetime
-    created_by: str  # This will be the username
+    created_by: str  
 
     class Config:
         from_attributes = True
@@ -30,14 +32,14 @@ class MessageCreate(BaseModel):
 class MessageResponse(BaseModel):
     id: int
     content: str
-    user: str  # This will be the username
+    user: str  
     created_at: datetime
 
     class Config:
         from_attributes = True
 
 class ChannelMemberResponse(BaseModel):
-    user: str  # This will be the username
+    user: str  
     role: str
 
     class Config:
@@ -49,3 +51,4 @@ class ChannelDetailResponse(ChannelResponse):
 
     class Config:
         from_attributes = True
+

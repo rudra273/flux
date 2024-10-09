@@ -29,4 +29,5 @@ class Profile(Model, TimestampMixin):
         table = "profiles"
 
     def __str__(self):
-        return f"Profile for {self.user.username}"
+        return f"Profile for {self.user.username}" 
+        

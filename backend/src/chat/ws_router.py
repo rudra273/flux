@@ -1,3 +1,5 @@
+# chat/ws_router.py
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from src.users.service import get_current_user
 from src.users.models import User
