@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { AuthProvider } from "../providers/AuthProvider";
 import SideNav from "../components/SideNav";
 import "./globals.css";
+import { PublicEnvScript } from 'next-runtime-env';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,6 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+          <PublicEnvScript />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
           <div className="flex min-h-screen">
@@ -43,3 +47,4 @@ export default function RootLayout({
     </html>
   );
 }
+
