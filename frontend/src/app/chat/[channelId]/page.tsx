@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -13,6 +15,7 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const channelId = parseInt(params.channelId);
 
@@ -21,11 +24,18 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
   }, [channelId]);
 
   const fetchChannelDetails = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const channelData = await getChannel(channelId);
       setChannel(channelData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching channel:', error);
+      if (error.status === 403) {
+        setError('This is a private channel. You need to be a member to view details.');
+      } else {
+        setError('Error loading channel details');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -33,11 +43,13 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
 
   const handleJoinChannel = async () => {
     setIsJoining(true);
+    setError(null);
     try {
       await joinChannel(channelId);
       await fetchChannelDetails();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining channel:', error);
+      setError('Failed to join channel');
     } finally {
       setIsJoining(false);
     }
@@ -45,11 +57,13 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
 
   const handleLeaveChannel = async () => {
     setIsLeaving(true);
+    setError(null);
     try {
       await leaveChannel(channelId);
       await fetchChannelDetails();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error leaving channel:', error);
+      setError('Failed to leave channel');
     } finally {
       setIsLeaving(false);
     }
@@ -70,10 +84,12 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
   if (!channel) {
     return (
       <div className="container mx-auto p-6 text-center">
-        <h1 className="text-2xl font-semibold text-gray-700">Channel not found</h1>
+        <h1 className="text-2xl font-semibold text-gray-700 mb-4">
+          {error || 'Channel not found'}
+        </h1>
         <button
           onClick={() => router.push('/chat')}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
           Back to Channels
         </button>
@@ -96,17 +112,28 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
         </button>
       </div>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 className="text-3xl font-bold mb-4">{channel.name}</h1>
-        
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-3xl font-bold">{channel.name}</h1>
+          <span className={`px-3 py-1 rounded-full text-sm ${
+            channel.is_public ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {channel.is_public ? 'Public' : 'Private'} Channel
+          </span>
+        </div>
+
         <div className="mb-4">
           <p className="text-gray-600">{channel.description}</p>
         </div>
-        
-        <div className="flex items-center text-sm text-gray-500 mb-4">
-          <span>{channel.is_public ? 'Public Channel' : 'Private Channel'}</span>
-          <span className="mx-2">•</span>
-          <span>Created by {channel.created_by}</span>
+
+        <div className="text-sm text-gray-500 mb-6">
+          Created by {channel.created_by}
         </div>
 
         <div className="flex gap-4">
@@ -144,7 +171,9 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
           {channel.members.map((member, index) => (
             <li key={index} className="flex items-center justify-between py-2 px-4 hover:bg-gray-50 rounded-lg">
               <span>{member.user}</span>
-              <span className="text-sm px-2 py-1 bg-gray-100 rounded-full text-gray-600">{member.role}</span>
+              <span className="text-sm px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                {member.role}
+              </span>
             </li>
           ))}
         </ul>

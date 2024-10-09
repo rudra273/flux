@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 
+
 export interface Channel {
   id: number;
   name: string;
@@ -54,8 +55,17 @@ export const sendMessage = async (channelId: number, content: string): Promise<M
 
 
 export const searchChannels = async (query: string): Promise<Channel[]> => {
-  return apiClient(`/chat/channels/search?query=${encodeURIComponent(query)}`, { requiresAuth: true });
+  try {
+    return await apiClient(`/chat/channels/search?query=${encodeURIComponent(query)}`, { 
+      requiresAuth: true,
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error('Search channels API error:', error);
+    throw new Error('Failed to search channels');
+  }
 };
+
 
 
 export const joinChannel = async (channelId: number): Promise<void> => {

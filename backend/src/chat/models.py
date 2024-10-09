@@ -32,3 +32,4 @@ class Message(Model, TimestampMixin):
     
     class Meta:
         table = "messages"
+        

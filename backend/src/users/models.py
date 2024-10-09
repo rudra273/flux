@@ -1,3 +1,5 @@
+# users/models.py
+
 from tortoise.models import Model
 from tortoise import fields
 from src.models import TimestampMixin
@@ -30,4 +32,4 @@ class Profile(Model, TimestampMixin):
 
     def __str__(self):
         return f"Profile for {self.user.username}" 
-        
+
