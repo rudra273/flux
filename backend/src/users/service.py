@@ -14,12 +14,14 @@ from typing import Optional
 from tortoise.transactions import in_transaction
 from src.posts.models import Post 
 
+from src.config import SECRET_KEY
+
 logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-SECRET_KEY = "rudra"  
+SECRET_KEY = SECRET_KEY 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 5
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -27,14 +29,6 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 # Store for refresh tokens (In production, use Redis or database)
 refresh_tokens = {}
 
-# async def create_user(user: UserCreate) -> UserResponse:
-#     hashed_password = pwd_context.hash(user.password)
-#     user_dict = user.dict()
-#     user_dict['password'] = hashed_password
-#     new_user = User(**user_dict)
-#     await new_user.save()
-#     logger.info(f"Created new user: {new_user.username}")
-#     return UserResponse.from_orm(new_user)
 
 async def create_user(user: UserCreate) -> UserResponse:
     hashed_password = pwd_context.hash(user.password)

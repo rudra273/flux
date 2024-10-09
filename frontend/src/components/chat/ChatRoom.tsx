@@ -45,7 +45,9 @@ const ChatRoom: React.FC = () => {
         return;
       }
   
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+      // const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+
       const ws = new WebSocket(`${wsUrl}/chat/ws/${channelId}?token=${token}`);
   
       ws.onopen = () => {

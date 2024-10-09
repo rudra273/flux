@@ -10,6 +10,8 @@ from src.users.router import router as users_router
 from src.chat import router as chat_router
 from src.chat import ws_router as chat_ws_router
 
+from src.config import CORS_ALLOW_ORIGINS
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,7 +21,7 @@ app = FastAPI()
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://frontend:3000"],
+    allow_origins=CORS_ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
