@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { register } from '../../../utils/authApi';
+import { ApiError } from '../../../utils/apiClient';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -16,8 +17,12 @@ export default function Register() {
     try {
       await register({ username, email, password });
       router.push('/auth/login');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'An error occurred during registration');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message || 'An error occurred during registration');
+      } else {
+        setError('An unexpected error occurred during registration');
+      }
     }
   };
 

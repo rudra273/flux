@@ -1,7 +1,7 @@
-// app/posts/page.tsx
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getAllPosts } from '../../utils/postsApi';
 import { useAuth } from '../../providers/AuthProvider';
@@ -10,13 +10,12 @@ import CreatePost from '../../components/CreatePost';
 import { ApiError } from '../../utils/apiClient';
 
 interface Post {
-  id: string;
+  id: number;
   title: string;
   content: string;
-  author: {
-    username: string;
-  };
+  username: string;
   created_at: string;
+  updated_at: string;
 }
 
 export default function Posts() {
@@ -25,13 +24,7 @@ export default function Posts() {
   const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (!authLoading) {
-      fetchPosts();
-    }
-  }, [authLoading]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setIsLoading(true);
     setError('');
     
@@ -48,7 +41,23 @@ export default function Posts() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []); // Empty dependency array since this function doesn't depend on any props or state
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!authLoading && mounted) {
+      fetchPosts();
+    }
+
+    return () => {
+      mounted = false; // Cleanup to prevent setting state on unmounted component
+    };
+  }, [authLoading, fetchPosts]);
+
+  const handlePostCreated = useCallback(async () => {
+    await fetchPosts();
+  }, [fetchPosts]);
 
   if (authLoading) {
     return (
@@ -59,7 +68,7 @@ export default function Posts() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Posts</h1>
         <p className="text-gray-600 mt-2">
@@ -74,7 +83,7 @@ export default function Posts() {
         </div>
       )}
       
-      {isAuthenticated && <CreatePost onPostCreated={fetchPosts} />}
+      {isAuthenticated && <CreatePost onPostCreated={handlePostCreated} />}
 
       {isLoading ? (
         <div className="flex justify-center items-center py-8">

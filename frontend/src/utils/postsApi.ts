@@ -19,3 +19,4 @@ export const createPost = async (postData: { title: string; content: string }) =
     requiresAuth: true  // Requires auth for creating a post
   });
 };
+

@@ -2,10 +2,10 @@
 **/.venv
 **/.classpath
 **/.dockerignore
-**/.env
 **/.git
 **/.gitignore
 **/.project
+**/.env
 **/.toolstarget
 **/.vs
 **/.vscode

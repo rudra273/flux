@@ -1,12 +1,11 @@
-
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChannelDetail, getChannel, joinChannel, leaveChannel } from '@/utils/chatApi';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuth } from '@/providers/AuthProvider';
+import { ApiError } from '@/utils/apiClient';
 
 export default function ChannelPage({ params }: { params: { channelId: string } }) {
   const router = useRouter();
@@ -19,19 +18,15 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
 
   const channelId = parseInt(params.channelId);
 
-  useEffect(() => {
-    fetchChannelDetails();
-  }, [channelId]);
-
-  const fetchChannelDetails = async () => {
+  const fetchChannelDetails = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const channelData = await getChannel(channelId);
       setChannel(channelData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching channel:', error);
-      if (error.status === 403) {
+      if (error instanceof ApiError && error.status === 403) {
         setError('This is a private channel. You need to be a member to view details.');
       } else {
         setError('Error loading channel details');
@@ -39,7 +34,11 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [channelId]);
+
+  useEffect(() => {
+    fetchChannelDetails();
+  }, [fetchChannelDetails]);
 
   const handleJoinChannel = async () => {
     setIsJoining(true);
@@ -47,7 +46,7 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
     try {
       await joinChannel(channelId);
       await fetchChannelDetails();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error joining channel:', error);
       setError('Failed to join channel');
     } finally {
@@ -61,7 +60,7 @@ export default function ChannelPage({ params }: { params: { channelId: string } 
     try {
       await leaveChannel(channelId);
       await fetchChannelDetails();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error leaving channel:', error);
       setError('Failed to leave channel');
     } finally {

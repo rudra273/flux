@@ -1,8 +1,6 @@
 import { refreshToken } from './authApi';
 import { BACKEND_API_URL } from '@/constants';
 
-
-// const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const API_URL = BACKEND_API_URL;
 
 export class ApiError extends Error {
@@ -37,7 +35,6 @@ function isTokenExpired(token: string): boolean {
 
 async function getValidToken(): Promise<string> {
   let token = localStorage.getItem('accessToken');
-  
   if (!token || isTokenExpired(token)) {
     const refreshTokenValue = localStorage.getItem('refreshToken');
     if (!refreshTokenValue) {
@@ -49,7 +46,7 @@ async function getValidToken(): Promise<string> {
       localStorage.setItem('accessToken', tokens.access_token);
       localStorage.setItem('refreshToken', tokens.refresh_token);
       token = tokens.access_token;
-    } catch (error) {
+    } catch {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       throw new ApiError(401, 'Failed to refresh token');
@@ -85,3 +82,6 @@ export async function apiClient(endpoint: string, options: ApiOptions = {}) {
     throw new ApiError(500, 'Network error');
   }
 }
+
+
+

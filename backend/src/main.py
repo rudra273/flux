@@ -12,6 +12,8 @@ from src.chat import ws_router as chat_ws_router
 
 from src.config import CORS_ALLOW_ORIGINS
 
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
