@@ -70,11 +70,6 @@ class PostResponse(BaseModel):
     content: str
     created_at: datetime
     updated_at: datetime
-    # Add any other fields that are in your Post model
-    # For example, if you have fields like:
-    # is_published: bool
-    # likes_count: int
-    # etc.
 
     class Config:
         from_attributes = True

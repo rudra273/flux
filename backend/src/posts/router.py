@@ -18,14 +18,31 @@ async def create_post_route(post: PostCreate, current_user: User = Depends(get_c
     return await Post.create(**post_dict)
 
 
-@router.get("/{post_id}", response_model=PostInDB)
+@router.get("/{post_id}", response_model=PostWithUser)
 async def get_post_route(post_id: int):
     logger.info(f"Fetching post with id: {post_id}")
+    
+    # Fetch the post by ID
     post = await Post.get_or_none(id=post_id)
+    
     if not post:
         logger.warning(f"Post with id {post_id} not found")
         raise PostNotFoundError(post_id)
-    return post
+    
+    # Fetch the user associated with the post
+    user = await User.get(id=post.user_id)
+    
+    # Return the post data along with the username
+    return {
+        "id": post.id,
+        "title": post.title,
+        "content": post.content,
+        "username": user.username,  
+        "created_at": post.created_at,
+        "updated_at": post.updated_at,
+    }
+
+
 
 
 @router.get("/", response_model=list[PostWithUser])

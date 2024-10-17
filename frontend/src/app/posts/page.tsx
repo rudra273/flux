@@ -51,7 +51,7 @@ export default function Posts() {
     }
 
     return () => {
-      mounted = false; // Cleanup to prevent setting state on unmounted component
+      mounted = false; 
     };
   }, [authLoading, fetchPosts]);
 

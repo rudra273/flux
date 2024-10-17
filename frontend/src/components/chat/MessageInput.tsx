@@ -1,4 +1,3 @@
-
 // components/chat/MessageInput.tsx
 'use client';
 

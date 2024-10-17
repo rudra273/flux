@@ -38,11 +38,17 @@ register_tortoise(
 )
 
 
-# Register routers
-app.include_router(posts_router, prefix="/posts", tags=["posts"])
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(chat_router.router, prefix="/chat", tags=["chat"])
-app.include_router(chat_ws_router.router, prefix="/chat", tags=["chat"])
+# # Register routers
+# app.include_router(posts_router, prefix="/posts", tags=["posts"])
+# app.include_router(users_router, prefix="/users", tags=["users"])
+# app.include_router(chat_router.router, prefix="/chat", tags=["chat"])
+# app.include_router(chat_ws_router.router, prefix="/chat", tags=["chat"])
+
+# Register routers 
+app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
+app.include_router(users_router, prefix="/api/users", tags=["users"])
+app.include_router(chat_router.router, prefix="/api/chat", tags=["chat"])
+app.include_router(chat_ws_router.router, prefix="/api/chat", tags=["chat"])
 
 
 # Setup events
@@ -56,7 +62,7 @@ async def shutdown_event():
     logger.info("Shutting down the application")
     await close_db()
 
-@app.get("/")
+@app.get("/api")
 async def root():
     logger.info("Root endpoint accessed")
-    return {"message": "Welcome to the Flux API"}
+    return {"message": "Welcome to the Flux"}

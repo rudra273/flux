@@ -19,10 +19,8 @@ export default function Login() {
     setError('');
 
     try {
-      // Perform login
       await login({ username, password });
       
-      // Update auth state
       await checkAuth();
       
       // Navigate to posts page
