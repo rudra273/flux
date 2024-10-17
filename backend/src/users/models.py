@@ -33,3 +33,5 @@ class Profile(Model, TimestampMixin):
     def __str__(self):
         return f"Profile for {self.user.username}" 
 
+
+# class Device
